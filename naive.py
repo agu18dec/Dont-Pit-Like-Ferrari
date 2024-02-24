@@ -14,6 +14,15 @@
 # -> no track specific physics
 # -> no engine dynamics
 # -> considering time and not position, no 'overtaking'
+# -> Fully Observable Setting
+
+##### Findings #####
+# -> Rewards above 400+ which means way more pits (greater than expected value of 7.5 * 50 ) --> therefore it is choosing a strategy
+# -> Max Reward in this setting is 500
+# -> Total Pit Stops are A LOT --> Most likely a result of reward function rewarding that
+# -> Pit Stops with the Same Tyre - LOL --> doesn't truly understand the meaning of the tires
+# -> takes time for initial pit stop (4-5 laps) --> perhaps exploring but then just gets into it consecutively
+
 
 import numpy as np
 
