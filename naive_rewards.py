@@ -98,14 +98,21 @@ def simulate_race(agent, laps=50):
     return total_reward, pit_stops, pit_laps
 
 
-agent = QLearning(alpha = 0.1, gamma = 0.95, epsilon = 0.1)
-total_reward, pit_stops, pit_laps = simulate_race(agent)
+def run_episodes(num_episodes = 100):
+    agent = QLearning(alpha = 0.1, gamma = 0.95, epsilon = 0.1)
+    num_episodes = 100
+    max_reward = float('-inf')
+    for i in range(1, num_epsiodes + 1):
+        print(f"Running Episode {i} of {num_episodes}")
+        total_reward, pit_stops, pit_laps = simulate_race(agent)
+        print(f"Total Reward: {total_reward}")
+        print(f"Total Pit Stops: {pit_stops}")
+        print(f"Pit Stops at Lap Numbers with Switch to Tyres: {pit_laps}")
+        max_reward = max(total_reward, max_reward)
 
-print(f"Total Reward: {total_reward}")
-print(f"Total Pit Stops: {pit_stops}")
-print(f"Pit Stops at Lap Numbers with Switch to Tyres: {pit_laps}")
+    print("Q-Table after the race:")
+    print(agent.q_table)
 
-print("Q-Table after the race:")
-print(agent.q_table)
+run_episodes()
 
 
