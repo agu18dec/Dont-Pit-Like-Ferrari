@@ -11,18 +11,13 @@
 # -> no tire degradation
 # -> single agent setting
 # -> no rain
-# -> all tires are the same
+#
 # -> no track specific physics
 # -> no engine dynamics
 # -> considering time and not position, no 'overtaking'
 # -> Fully Observable Setting
 
 ##### Findings #####
-# -> Rewards above 400+ which means way more pits (greater than expected value of 7.5 * 50 ) --> therefore it is choosing a strategy
-# -> Max Reward in this setting is 500 (actually I might be wrong about this)
-# -> Total Pit Stops are A LOT --> Most likely a result of reward function rewarding that
-# -> Pit Stops with the Same Tyre - LOL --> doesn't truly understand the meaning of the tires
-# -> takes time for initial pit stop (4-5 laps) --> perhaps exploring but then just gets into it consecutively
 
 
 import numpy as np
@@ -57,36 +52,51 @@ class QLearning:
         td_diff = td_target - self.q_table[state_index][action_index]
         self.q_table[state_index][action_index] += self.alpha * td_diff
     
-def simulate_race(agent, laps = 50):
-    initial_state = 'NS' #starting on new_softs
-    state = initial_state
+def simulate_race(agent, laps=50):
+    state = 'NS'  # Starting with New Soft tires
     total_reward = 0
     tire_age = 0
     pit_stops = 0
-    pit_laps = {} #indexed by lap, each entry stores [old tire type, new_tire_type]
+    pit_laps = {}
+    max_pit_stops_allowed = 2
 
     for lap in range(1, laps + 1):
         action = agent.choose_action(state)
-        if 'P' in action: #agent pits if this is the case
-            pit_stops += 1
-            old_tire_type = state[-1]
-            new_tire_type = action[-1]  # Get the tire type from the action
-            pit_laps[lap] = [old_tire_type, new_tire_type]
-            state = 'N' + new_tire_type  # Prefix 'N' for new tires, constructing the next state
-            tire_age = 0 #reset
-        else: #continuing on old tires
-            tire_age += 1 
-            #no tire degradation model
-            if tire_age > 1 and 'N' in state:  # Change to old after 1 lap of use
-                state = 'O' + state[1:]
 
-        reward = 10 if 'N' in state else 5 #tire change is rewarded but comes with a cost --> very very simple reward model
+        if action[-1] == state[-1]:
+            reward = -20
+        else:
+            if 'P' in action:
+                pit_stops += 1
+                old_tire_type = state[-1]
+                new_tire_type = action[-1]
+
+                if pit_stops > max_pit_stops_allowed:
+                    reward = -50 
+                else:
+                    pit_laps[lap] = [old_tire_type, new_tire_type]
+                    state = 'N' + new_tire_type
+                    tire_age = 0
+                    reward = 5
+            else: 
+                tire_age += 1
+                if tire_age > 1 and 'N' in state:  # Tires become old after 1 lap
+                    state = 'O' + state[1:]
+
+        if 'S' in state:
+            reward += 10 - tire_age  # Faster but wears out quicker
+        elif 'M' in state:
+            reward += 8 - (tire_age * 0.75)  # Balance between speed and durability
+        elif 'H' in state:
+            reward += 6 - (tire_age * 0.5)  # Durable but slower
+
         next_state = state
         agent.update_q_table(state, action, reward, next_state)
         state = next_state
         total_reward += reward
-    
+
     return total_reward, pit_stops, pit_laps
+
 
 agent = QLearning(alpha = 0.1, gamma = 0.95, epsilon = 0.1)
 total_reward, pit_stops, pit_laps = simulate_race(agent)
