@@ -11,14 +11,13 @@
 # -> no tire degradation
 # -> single agent setting
 # -> no rain
-#
 # -> no track specific physics
 # -> no engine dynamics
 # -> considering time and not position, no 'overtaking'
 # -> Fully Observable Setting
 
 ##### Findings #####
-
+# -> Mostly negative rewards
 
 import numpy as np
 
@@ -58,7 +57,7 @@ def simulate_race(agent, laps=50):
     tire_age = 0
     pit_stops = 0
     pit_laps = {}
-    max_pit_stops_allowed = 2
+    max_pit_stops_allowed = 3
     reward = 0
 
     for lap in range(1, laps + 1):
@@ -95,6 +94,9 @@ def simulate_race(agent, laps=50):
         agent.update_q_table(state, action, reward, next_state)
         state = next_state
         total_reward += reward
+    
+    if pit_stops < 2:
+        total_reward -= 50
 
     return total_reward, pit_stops, pit_laps
 
