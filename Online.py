@@ -18,7 +18,6 @@ class Node:
         self.untried_actions = self.available_actions()
 
     def available_actions(self):
-        # Simplified to pit or not pit, and tire type
         return ['no_pit', 'pit_soft', 'pit_medium', 'pit_hard']
     
     def ucb1(self, total_visits):
@@ -38,7 +37,7 @@ class MCTS:
     
     def expand(self, node):
         action = node.untried_actions.pop()
-        child_state = self.transition(node.state, action)  # Simplified transition function
+        child_state = self.transition(node.state, action) 
         child_node = Node(state=child_state, parent=node, action=action)
         node.children.append(child_node)
         return child_node
@@ -71,10 +70,9 @@ class MCTS:
         # Return the action of the child with the highest win ratio
         return max(root_node.children, key=lambda c: c.wins / c.visits if c.visits else 0).action
 
-# Instantiate MCTS with a simplified initial root state
 initial_root_state = {"position": 5, "tire_condition": "medium", "laps_remaining": 20}
 mcts = MCTS(simulations=100)
 
 # Run MCTS to determine the next action
 recommended_action = mcts.run(initial_root_state)
-recommended_action
+print(recommended_action)
